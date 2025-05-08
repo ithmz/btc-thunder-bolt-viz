@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-T">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitcoin Thunderbolt Process</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold" style="color: #C0A000;">Bitcoin Thunderbolt Protocol Visualization</h1>
+            <p class="text-lg mt-2">An interactive walkthrough of the key off-chain transfer process.</p>
+        </header>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div class="entity" id="entity-alice">Alice (Sender)</div>
+            <div class="entity" id="entity-bob">Bob (Receiver 1)</div>
+            <div class="entity" id="entity-carol">Carol (Receiver 2)</div>
+            <div class="entity committee" id="entity-committee">Committee</div>
+            <div class="entity bitcoin-network col-span-2 md:col-span-4" id="entity-bitcoin">Bitcoin Network (On-Chain)</div>
+        </div>
+        <div class="text-center mb-6">
+            <span class="current-owner-label">Current UTXO Owner: </span><span id="current-owner-display">None</span>
+        </div>
+
+
+        <div class="text-center mb-8 space-x-2">
+            <button class="button" id="btn-prepare">1. Prepare</button>
+            <button class="button" id="btn-transfer-bob" disabled>2. Transfer (Alice <span class="arrow">&rarr;</span> Bob)</button>
+            <button class="button" id="btn-reassign-carol" disabled>3. Reassign (Bob <span class="arrow">&rarr;</span> Carol)</button>
+            <button class="button" id="btn-finalize-carol" disabled>4. Finalize (Carol)</button>
+            <button class="button button-secondary" id="btn-reset">Reset</button>
+        </div>
+
+        <div id="phase-details-container">
+            <div class="card hidden" id="phase-prepare">
+                <h2 class="phase-title">Phase 1: Prepare</h2>
+                <p>Alice wants to make her Bitcoin UTXO available for off-chain transfers via Thunderbolt.</p>
+                <div class="info-box">
+                    <strong>Action:</strong> Alice locks her <span class="utxo">UTXO</span> on the Bitcoin Network.
+                    <br>This UTXO is now controlled by a joint key: Alice + Committee.
+                    <br><strong>On-Chain:</strong> A transaction confirms this lock.
+                    <br><strong>Off-Chain Ledger (Committee):</strong> Records Alice as the initial owner of the <span class="utxo">UTXO</span>.
+                </div>
+                <p class="mt-2"><strong>Result:</strong> The <span class="utxo">UTXO</span> is ready for off-chain transfers. Alice is the current owner.</p>
+            </div>
+
+            <div class="card hidden" id="phase-transfer-bob">
+                <h2 class="phase-title">Phase 2: Transfer (Alice <span class="arrow">&rarr;</span> Bob)</h2>
+                <p>Alice transfers the <span class="utxo">UTXO</span> ownership to Bob off-chain.</p>
+                <div class="info-box">
+                    <strong>Actions:</strong>
+                    <ol class="list-decimal list-inside ml-4">
+                        <li>Alice creates her tweaked signature part <span class="signature-part">S'_Alice_Bob</span> using a secret shared with Bob.</li>
+                        <li>Committee creates its tweaked signature part <span class="signature-part">S'_Committee_Bob</span> using a secret shared with Bob.</li>
+                        <li>Committee verifies the tweaks and updates its off-chain ledger.</li>
+                    </ol>
+                    <br><strong>Off-Chain Ledger (Committee):</strong> Bob is now the owner of the <span class="utxo">UTXO</span>. Alice can no longer spend it.
+                </div>
+                <p class="mt-2"><strong>Result:</strong> Bob is the new off-chain owner. The transfer was instant and didn't touch the Bitcoin blockchain.</p>
+            </div>
+
+            <div class="card hidden" id="phase-reassign-carol">
+                <h2 class="phase-title">Phase 3: Reassign (Bob <span class="arrow">&rarr;</span> Carol)</h2>
+                <p>Bob transfers the <span class="utxo">UTXO</span> ownership to Carol off-chain.</p>
+                <div class="info-box">
+                    <strong>Actions:</strong> (Similar to Alice <span class="arrow">&rarr;</span> Bob transfer)
+                    <ol class="list-decimal list-inside ml-4">
+                        <li>Bob creates his tweaked signature part <span class="signature-part">S''_Bob_Carol</span> using a secret shared with Carol (this modifies his previous share).</li>
+                        <li>Committee creates its new tweaked signature part <span class="signature-part">S''_Committee_Carol</span> using a secret shared with Carol.</li>
+                        <li>Committee verifies and updates its off-chain ledger.</li>
+                    </ol>
+                    <br><strong>Off-Chain Ledger (Committee):</strong> Carol is now the owner of the <span class="utxo">UTXO</span>. Bob can no longer spend it.
+                </div>
+                <p class="mt-2"><strong>Result:</strong> Carol is the new off-chain owner. Another instant, off-chain transfer.</p>
+            </div>
+
+            <div class="card hidden" id="phase-finalize-carol">
+                <h2 class="phase-title">Phase 4: Finalize (Carol Redeems On-Chain)</h2>
+                <p>Carol decides to redeem the <span class="utxo">UTXO</span> on the Bitcoin Network.</p>
+                <div class="info-box">
+                    <strong>Actions:</strong>
+                    <ol class="list-decimal list-inside ml-4">
+                        <li>Carol requests the Committee's final tweaked signature share (<span class="signature-part">S''_Committee_Carol</span>).</li>
+                        <li>Carol combines her final share (<span class="signature-part">S''_Bob_Carol</span>) with the committee's share.</li>
+                        <li>Carol mathematically reverses all accumulated tweaks to reconstruct the original valid Schnorr signature for the <span class="utxo">UTXO</span>.</li>
+                        <li><strong>Atomic Swap with Committee:</strong>
+                            <ul class="list-disc list-inside ml-6">
+                                <li>Committee facilitates spending the original <span class="utxo">UTXO</span> (funds to Committee temporarily). <span class="text-sm text-gray-600">(Tx1)</span></li>
+                                <li>Committee escrows funds to a joint Carol + Committee address. <span class="text-sm text-gray-600">(Tx2)</span></li>
+                                <li>Carol + Committee move funds from escrow to Carol's sole address. <span class="text-sm text-gray-600">(Tx3)</span></li>
+                            </ul>
+                        </li>
+                    </ol>
+                    <br><strong>On-Chain:</strong> The <span class="utxo">UTXO</span> is spent, and Carol receives the Bitcoin.
+                    <br><strong>Off-Chain Ledger (Committee):</strong> Marks the <span class="utxo">UTXO</span> as spent.
+                </div>
+                <p class="mt-2"><strong>Result:</strong> Carol has successfully redeemed the Bitcoin. The Thunderbolt off-chain lifecycle for this <span class="utxo">UTXO</span> is complete.</p>
+            </div>
+             <div class="card hidden" id="phase-complete">
+                <h2 class="phase-title">Process Complete!</h2>
+                <p>The Thunderbolt UTXO has been prepared, transferred off-chain multiple times, and finally redeemed on the Bitcoin network.</p>
+                <p class="mt-2">Click "Reset" to start over.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const btnPrepare = document.getElementById('btn-prepare');
+        const btnTransferBob = document.getElementById('btn-transfer-bob');
+        const btnReassignCarol = document.getElementById('btn-reassign-carol');
+        const btnFinalizeCarol = document.getElementById('btn-finalize-carol');
+        const btnReset = document.getElementById('btn-reset');
+
+        const phasePrepareDiv = document.getElementById('phase-prepare');
+        const phaseTransferBobDiv = document.getElementById('phase-transfer-bob');
+        const phaseReassignCarolDiv = document.getElementById('phase-reassign-carol');
+        const phaseFinalizeCarolDiv = document.getElementById('phase-finalize-carol');
+        const phaseCompleteDiv = document.getElementById('phase-complete');
+        
+        const currentOwnerDisplay = document.getElementById('current-owner-display');
+
+        const allPhaseDivs = [phasePrepareDiv, phaseTransferBobDiv, phaseReassignCarolDiv, phaseFinalizeCarolDiv, phaseCompleteDiv];
+        const allButtons = [btnPrepare, btnTransferBob, btnReassignCarol, btnFinalizeCarol];
+
+        let currentState = 'initial'; // 'initial', 'prepared', 'transferred_bob', 'reassigned_carol', 'finalized_carol'
+
+        // Function to update UI based on state
+        function updateUI() {
+            // Hide all phase details first
+            allPhaseDivs.forEach(div => div.classList.add('hidden'));
+            allPhaseDivs.forEach(div => div.classList.remove('step-active')); // Remove active border from all
+            allButtons.forEach(btn => btn.classList.remove('step-active')); // Remove active style from buttons
+
+
+            // Disable all action buttons by default, enable based on state
+            btnPrepare.disabled = true;
+            btnTransferBob.disabled = true;
+            btnReassignCarol.disabled = true;
+            btnFinalizeCarol.disabled = true;
+
+            switch (currentState) {
+                case 'initial':
+                    btnPrepare.disabled = false;
+                    btnPrepare.classList.add('step-active'); // Highlight next action
+                    currentOwnerDisplay.textContent = 'None';
+                    break;
+                case 'prepared':
+                    phasePrepareDiv.classList.remove('hidden');
+                    phasePrepareDiv.classList.add('step-active');
+                    btnTransferBob.disabled = false;
+                    btnTransferBob.classList.add('step-active');
+                    currentOwnerDisplay.textContent = 'Alice';
+                    highlightEntity('entity-alice', true);
+                    highlightEntity('entity-bob', false);
+                    highlightEntity('entity-carol', false);
+                    break;
+                case 'transferred_bob':
+                    phaseTransferBobDiv.classList.remove('hidden');
+                    phaseTransferBobDiv.classList.add('step-active');
+                    btnReassignCarol.disabled = false;
+                    btnReassignCarol.classList.add('step-active');
+                    currentOwnerDisplay.textContent = 'Bob';
+                    highlightEntity('entity-alice', false);
+                    highlightEntity('entity-bob', true);
+                    highlightEntity('entity-carol', false);
+                    break;
+                case 'reassigned_carol':
+                    phaseReassignCarolDiv.classList.remove('hidden');
+                    phaseReassignCarolDiv.classList.add('step-active');
+                    btnFinalizeCarol.disabled = false;
+                    btnFinalizeCarol.classList.add('step-active');
+                    currentOwnerDisplay.textContent = 'Carol';
+                    highlightEntity('entity-alice', false);
+                    highlightEntity('entity-bob', false);
+                    highlightEntity('entity-carol', true);
+                    break;
+                case 'finalized_carol':
+                    phaseFinalizeCarolDiv.classList.remove('hidden');
+                    phaseFinalizeCarolDiv.classList.add('step-active');
+                    currentOwnerDisplay.textContent = 'Carol (Finalized On-Chain)';
+                    highlightEntity('entity-alice', false);
+                    highlightEntity('entity-bob', false);
+                    highlightEntity('entity-carol', true); // Carol still involved
+                    // No more action buttons enabled, show completion message after a delay or next click
+                    setTimeout(() => {
+                        phaseCompleteDiv.classList.remove('hidden');
+                        phaseFinalizeCarolDiv.classList.remove('step-active'); // Deactivate previous
+                        phaseCompleteDiv.classList.add('step-active');
+                    }, 1500); // Show completion after a short delay
+                    break;
+            }
+        }
+        
+        function highlightEntity(entityId, isActive) {
+            const entityDiv = document.getElementById(entityId);
+            if (isActive) {
+                entityDiv.style.backgroundColor = '#FBC02D'; // Darker yellow for active
+                entityDiv.style.color = '#000000';
+                entityDiv.style.fontWeight = 'bold';
+                entityDiv.classList.add('shadow-lg');
+            } else {
+                // Reset to default styles based on type
+                if (entityId === 'entity-committee') {
+                    entityDiv.style.backgroundColor = '#FFD54F';
+                } else if (entityId === 'entity-bitcoin') {
+                    entityDiv.style.backgroundColor = '#FFB300';
+                     entityDiv.style.color = 'white';
+                } else {
+                    entityDiv.style.backgroundColor = '#FFEE58';
+                }
+                entityDiv.style.color = '#424242'; // Default text color
+                 if (entityId === 'entity-bitcoin') entityDiv.style.color = 'white';
+
+                entityDiv.style.fontWeight = '500';
+                entityDiv.classList.remove('shadow-lg');
+            }
+        }
+
+
+        // Event Listeners
+        btnPrepare.addEventListener('click', () => {
+            currentState = 'prepared';
+            updateUI();
+        });
+
+        btnTransferBob.addEventListener('click', () => {
+            currentState = 'transferred_bob';
+            updateUI();
+        });
+
+        btnReassignCarol.addEventListener('click', () => {
+            currentState = 'reassigned_carol';
+            updateUI();
+        });
+
+        btnFinalizeCarol.addEventListener('click', () => {
+            currentState = 'finalized_carol';
+            updateUI();
+        });
+
+        btnReset.addEventListener('click', () => {
+            currentState = 'initial';
+            updateUI();
+            // Reset entity highlights
+            ['entity-alice', 'entity-bob', 'entity-carol', 'entity-committee', 'entity-bitcoin'].forEach(id => highlightEntity(id, false));
+        });
+
+        // Initial UI setup
+        updateUI();
+    </script>
+</body>
+</html>

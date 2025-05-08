@@ -1,0 +1,108 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #FFFDE7; /* Light yellow background */
+    color: #424242; /* Dark grey text for contrast */
+}
+.card {
+    background-color: #FFF9C4; /* Lighter yellow for cards */
+    border: 1px solid #FDD835; /* Yellow border */
+    border-radius: 0.75rem; /* Rounded corners */
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: all 0.3s ease-in-out;
+}
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+}
+.button {
+    background-color: #FDD835; /* Main yellow for buttons */
+    color: #424242; /* Dark text on yellow button */
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 0.5rem;
+    margin-right: 0.5rem;
+    height: 3.5rem;
+    line-height: 1.5rem;  
+}
+.button:hover {
+    background-color: #FBC02D; /* Darker yellow on hover */
+}
+.button-secondary {
+    background-color: #FFF176; /* Lighter yellow for secondary actions */
+    color: #424242;
+    height: 3.5rem;
+    line-height: 1.5rem;
+}
+.button-secondary:hover {
+    background-color: #FDD835;
+}
+.entity {
+    background-color: #FFEE58; /* Medium yellow for entities */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    font-weight: 500;
+    margin: 0.5rem;
+    border: 1px solid #FBC02D;
+}
+.bitcoin-network {
+    background-color: #FFB300; /* Orange-yellow for Bitcoin network */
+    color: white;
+}
+.committee {
+    background-color: #FFD54F; /* Amber-yellow for Committee */
+}
+.info-box {
+    background-color: #FFFFE0; /* Very light yellow for info */
+    border-left: 4px solid #FDD835;
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 0.25rem;
+}
+.phase-title {
+    color: #C0A000; /* Darker yellow for titles */
+    font-weight: 700;
+    font-size: 1.5rem; /* Increased font size */
+    margin-bottom: 1rem;
+}
+.arrow {
+    font-size: 1.5rem;
+    color: #FBC02D;
+    margin: 0 0.5rem;
+}
+.utxo {
+    display: inline-block;
+    background-color: #FFCA28;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-weight: bold;
+    color: #3E2723;
+    border: 1px solid #FFA000;
+}
+.signature-part {
+    display: inline-block;
+    background-color: #FFF59D;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-style: italic;
+    color: #5D4037;
+    border: 1px solid #FBC02D;
+}
+/* Animation for highlighting steps */
+.step-active {
+    border: 2px solid #C0A000 !important; /* Prominent border for active step */
+    box-shadow: 0 0 15px rgba(253, 216, 53, 0.7); /* Yellow glow */
+}
+.hidden {
+    display: none;
+}
+.current-owner-label {
+    font-weight: bold;
+    color: #AD8E00;
+}
